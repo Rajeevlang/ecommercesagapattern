@@ -1,0 +1,5 @@
+# this files will not be included 
+./artifacts/*.md
+*.exe
+
+

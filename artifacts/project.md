@@ -41,3 +41,11 @@ flowchart TB
     Bus -- "any event" --> Notif
 
     Core -.->|traces/metrics| Observability
+
+echo "# Ecommerce-microservice" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:Rajeevlang/Ecommerce-microservice.git
+git push -u origin main
