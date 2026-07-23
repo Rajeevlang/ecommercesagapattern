@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package ecommerce.notification.v1;
+
+option go_package = "github.com/rajeev/ecommercesagapattern/shared/pb/notificationv1;notificationv1";
+
+// NotificationService handles outbound communications (emails, SMS, pushes).
+service NotificationService {
+  // SendEmail sends a notification to a customer.
+  // [Saga Role]: Post-Saga Action.
+  // This is typically called after the Saga completes successfully (Order is COMPLETED).
+  // Note: Since sending an email is a side-effect that cannot be transactionally undone easily,
+  // it is placed *outside* the core rollback boundary. If the email fails, we do NOT rollback
+  // the payment or stock; we simply log an error or retry the notification.
+  rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);
+}
+
+message SendEmailRequest {
+  string recipient_email = 1;
+  string subject = 2;
+  string body = 3;
+}
+
+message SendEmailResponse {
+  bool success = 1;
+}

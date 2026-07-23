@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package ecommerce.account.v1;
+
+option go_package = "github.com/rajeev/ecommercesagapattern/shared/pb/accountv1;accountv1";
+
+import "google/protobuf/timestamp.proto"; // Standard type for tracking timestamps
+
+// AccountService manages user profiles and address settings.
+// It is invoked by the GraphQL API Gateway when rendering user dashboard profiles or filling shipping details.
+service AccountService {
+  // GetProfile fetches the user's profile details.
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+
+  // UpdateProfile updates the profile and shipping address.
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+}
+
+// Address defines standard geographical coordinates/shipping address fields.
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string country = 4;
+  string zip_code = 5;
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message GetProfileResponse {
+  string user_id = 1;
+  string email = 2;
+  string name = 3;
+  string phone = 4;
+  Address address = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  string name = 2;
+  string phone = 3;
+  Address address = 4;
+}
+
+message UpdateProfileResponse {
+  bool success = 1;
+}

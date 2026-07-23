@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ecommerce.auth.v1;
+
+// The go_package option defines the import path and package name for the generated Go code.
+// Format: "import-path;package-name"
+option go_package = "github.com/rajeev/ecommercesagapattern/shared/pb/authv1;authv1";
+
+// AuthService handles authentication, user registration, and token management.
+// It is primarily invoked by the API Gateway to validate incoming requests.
+service AuthService {
+  // Register creates a new user credential record.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Login validates credentials and returns a JWT token for downstream requests.
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // ValidateToken validates a JWT token and returns user details.
+  // This is invoked by the GraphQL API Gateway to authenticate incoming client queries/mutations.
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2; // Will be hashed by the Auth Service before storage
+  string name = 3;
+}
+
+message RegisterResponse {
+  string user_id = 1; // Unique identifier of the registered user
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;   // JWT token containing claims (e.g., user_id, role)
+  string user_id = 2; // Convenient for the client
+}
+
+message ValidateTokenRequest {
+  string token = 1; // The authorization header token (usually Bearer token)
+}
+
+message ValidateTokenResponse {
+  bool is_valid = 1;   // True if the token is valid and not expired
+  string user_id = 2;  // Extracted user ID from token claims
+  string role = 3;     // User role (e.g. customer, admin)
+}

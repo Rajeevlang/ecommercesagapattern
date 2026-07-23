@@ -15,7 +15,6 @@ The e‑commerce platform is structured as a set of independent **micro‑servic
 ├─ order/                  # Order Service (Postgres)
 ├─ inventory/              # Inventory Service (Postgres)
 ├─ payment/                # Payment Service (Postgres + Stripe)
-├─ shipping/               # Shipping Service (Postgres)
 ├─ notification/           # Notification Service (email/SMS/push)
 ├─ cache/                  # Redis client library & utilities
 ├─ bus/                    # Event Bus abstraction (Kafka/NATS)

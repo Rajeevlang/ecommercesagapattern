@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package ecommerce.account.v1;
+
+
+import "google/protobuf/timestamp.proto";
+
+service AccountService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+}
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string country = 4;
+  string zip_code = 5;
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message GetProfileResponse {
+  string user_id = 1;
+  string email = 2;
+  string name = 3;
+  string phone = 4;
+  Address address = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  string name = 2;
+  string phone = 3;
+  Address address = 4;
+}
+
+message UpdateProfileResponse {
+  bool success = 1;
+}

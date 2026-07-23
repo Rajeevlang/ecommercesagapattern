@@ -1,0 +1,131 @@
+# GraphQL schema example
+# https://gqlgen.com/getting-started/
+
+
+    # --- CORE ENUMS & COMMON TYPES ---
+    
+    enum OrderStatus {
+      PENDING
+      COMPLETED
+      FAILED
+      CANCELLED
+    }
+    
+    type Address {
+      street: String!
+      city: String!
+      state: String!
+      country: String!
+      zipCode: String!
+    }
+    
+    input AddressInput {
+      street: String!
+      city: String!
+      state: String!
+      country: String!
+      zipCode: String!
+    }
+    
+    # --- AUTH TYPES ---
+    
+    type AuthPayload {
+      token: String!
+      user: User!
+    }
+    
+    # --- USER & ACCOUNT TYPES ---
+    
+    type User {
+      id: ID!
+      email: String!
+      name: String!
+      phone: String
+      address: Address
+    }
+    
+    input UpdateProfileInput {
+      name: String
+      phone: String
+      address: AddressInput
+    }
+    
+    # --- CATALOG TYPES ---
+    
+    type Product {
+      id: ID!
+      name: String!
+      description: String!
+      priceCents: Int!       
+      stock: Int!
+    }
+    
+    # Client-friendly Cursor-based Pagination for Products
+    type ProductConnection {
+      edges: [ProductEdge!]!
+      pageInfo: PageInfo!
+    }
+    
+    type ProductEdge {
+      cursor: String!
+      node: Product!
+    }
+    
+    type PageInfo {
+      hasNextPage: Boolean!
+      endCursor: String
+    }
+    
+    # --- ORDER & SAGA TYPES ---
+    
+    type OrderItem {
+      product: Product!      
+      quantity: Int!
+      priceCents: Int!
+    }
+    
+    type Order {
+      id: ID!
+      user: User!            
+      items: [OrderItem!]!
+      totalAmountCents: Int!
+      status: OrderStatus!
+      createdAt: String!
+      updatedAt: String!
+    }
+    
+    input OrderItemInput {
+      productId: ID!
+      quantity: Int!
+    }
+    
+    input CreateOrderInput {
+      items: [OrderItemInput!]!
+      paymentMethodToken: String! 
+    }
+    
+    # --- ROOT QUERIES & MUTATIONS ---
+    
+    type Query {
+      # Account queries
+      me: User!
+    
+      # Catalog queries
+      product(id: ID!): Product!
+      products(first: Int, after: String): ProductConnection! 
+      # Order queries
+      order(id: ID!): Order!
+      myOrders(limit: Int, offset: Int): [Order!]!
+    }
+    
+    type Mutation {
+      # Auth mutations
+      register(email: String!, password: String!, name: String!): AuthPayload!
+      login(email: String!, password: String!): AuthPayload!
+    
+      # Account mutations
+      updateProfile(input: UpdateProfileInput!): User!
+    
+      # Order mutations (Initiates Saga Distributed Transaction)
+      createOrder(input: CreateOrderInput!): Order!
+    }
