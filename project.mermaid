@@ -1,0 +1,43 @@
+flowchart TB
+    Client["Web / Mobile Client"]
+    GW["GraphQL API Gateway"]
+    Auth["Auth Service<br/>(JWT/OAuth2)"]
+
+    subgraph Core["Core Domain Services (gRPC)"]
+        Account["Account Service<br/>Postgres"]
+        Catalog["Catalog Service<br/>Elasticsearch"]
+        Order["Order Service<br/>Postgres"]
+        Inventory["Inventory Service<br/>Postgres"]
+        Payment["Payment Service<br/>Postgres + Stripe"]
+        Shipping["Shipping Service<br/>Postgres"]
+        
+    end
+
+    Notif["Notification Service<br/>(email/SMS/push)"]
+    Cache["Redis<br/>cache / cart / sessions"]
+    Bus["Event Bus<br/>Kafka / NATS"]
+
+    subgraph Observability
+        Prom["Prometheus + Grafana"]
+        Jaeger["Jaeger (OpenTelemetry tracing)"]
+        Logs["Centralized Logging (ELK)"]
+    end
+
+    Client --> GW
+    GW --> Auth
+    GW --> Account
+    GW --> Catalog
+    GW --> Order
+ 
+    GW <-.-> Cache
+
+    Order -- "OrderCreated" --> Bus
+    Bus -- "OrderCreated" --> Payment
+    Payment -- "PaymentAuthorized/Failed" --> Bus
+    Bus -- "PaymentAuthorized" --> Inventory
+    Inventory -- "StockReserved/Unavailable" --> Bus
+    Bus -- "StockReserved" --> Shipping
+    Shipping -- "OrderShipped" --> Bus
+    Bus -- "any event" --> Notif
+
+    Core -.->|traces/metrics| Observability
