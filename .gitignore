@@ -1,5 +1,57 @@
-# this files will not be included 
-./artifacts/*.md
-*.exe
 
+    # --- Binaries & Build Artifacts ---
+    *.exe
+    *.exe~
+    *.dll
+    *.so
+    *.dylib
+    bin/
+    dist/
+    out/
+    artifacts/
+    artifacts
+    # Ignore compiled service binaries (named after service folders)
+    apigateway/apigateway
+    auth/auth
+    account/account
+    catalog/catalog
+    order/order
+    payment/payment
+    notification/notification
+    
+    # --- Go Workspace & Dependency files ---
+    # We keep go.work and go.work.sum committed since they use relative paths (./shared, ./apigateway)
+    # so the project works out of the box for anyone cloning it.
+    # However, if you ever add local-only modules or machine-specific overrides, you'd ignore them:
+    # go.work
+    # go.work.sum
+    
+    # --- IDEs & Editors ---
+    .idea/
+    .vscode/
+    *.suo
+    *.ntvs*
+    *.njsproj
+    *.sln
+    *.swp
+    *.swo
+    *~
+    
+    # --- Operating System Files ---
+    .DS_Store
+    .DS_Store?
+    ._*
+    Thumbs.db
+    ehthumbs.db
 
+    # --- Environment & Secret Files (CRITICAL for security) ---
+    .env
+    .env.*
+    !.env.example
+    *.pem
+    *.key
+    certs/
+
+    # --- Temporary / Log Files ---
+    *.log
+    tmp/

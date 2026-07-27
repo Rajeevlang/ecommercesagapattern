@@ -2,27 +2,41 @@ syntax = "proto3";
 
 package ecommerce.account.v1;
 
-option go_package = "github.com/rajeev/ecommercesagapattern/shared/pb/accountv1;accountv1";
+option go_package = "github.com/Rajeevlang/ecommercesagapattern/shared/pb/account/v1;accountv1";
 
-import "google/protobuf/timestamp.proto"; // Standard type for tracking timestamps
+import "google/protobuf/timestamp.proto";
 
-// AccountService manages user profiles and address settings.
-// It is invoked by the GraphQL API Gateway when rendering user dashboard profiles or filling shipping details.
+// AccountService manages user profiles and multi-address settings.
 service AccountService {
-  // GetProfile fetches the user's profile details.
+  // GetProfile fetches profile details for a given user.
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
 
-  // UpdateProfile updates the profile and shipping address.
+  // UpdateProfile updates basic profile fields (name, phone, avatar).
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+
+  // CreateAddress adds a new shipping or billing address to a user profile.
+  rpc CreateAddress(CreateAddressRequest) returns (CreateAddressResponse);
+
+  // ListAddresses returns all saved addresses for a user.
+  rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
+
+  // DeleteAddress removes a specific address by ID.
+  rpc DeleteAddress(DeleteAddressRequest) returns (DeleteAddressResponse);
+
+  // SetDefaultAddress sets an address as default shipping or billing address.
+  rpc SetDefaultAddress(SetDefaultAddressRequest) returns (SetDefaultAddressResponse);
 }
 
-// Address defines standard geographical coordinates/shipping address fields.
 message Address {
-  string street = 1;
-  string city = 2;
-  string state = 3;
-  string country = 4;
-  string zip_code = 5;
+  string id = 1;
+  string user_id = 2;
+  string street = 3;
+  string city = 4;
+  string state = 5;
+  string country = 6;
+  string zip_code = 7;
+  bool is_default = 8;
+  string address_type = 9; // "SHIPPING" or "BILLING"
 }
 
 message GetProfileRequest {
@@ -34,17 +48,62 @@ message GetProfileResponse {
   string email = 2;
   string name = 3;
   string phone = 4;
-  Address address = 5;
-  google.protobuf.Timestamp created_at = 6;
+  string avatar_url = 5;
+  Address default_shipping_address = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
 }
 
 message UpdateProfileRequest {
   string user_id = 1;
   string name = 2;
   string phone = 3;
-  Address address = 4;
+  string avatar_url = 4;
 }
 
 message UpdateProfileResponse {
+  bool success = 1;
+  string user_id = 2;
+}
+
+message CreateAddressRequest {
+  string user_id = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  string country = 5;
+  string zip_code = 6;
+  bool is_default = 7;
+  string address_type = 8;
+}
+
+message CreateAddressResponse {
+  Address address = 1;
+}
+
+message ListAddressesRequest {
+  string user_id = 1;
+}
+
+message ListAddressesResponse {
+  repeated Address addresses = 1;
+}
+
+message DeleteAddressRequest {
+  string user_id = 1;
+  string address_id = 2;
+}
+
+message DeleteAddressResponse {
+  bool success = 1;
+}
+
+message SetDefaultAddressRequest {
+  string user_id = 1;
+  string address_id = 2;
+  string address_type = 3; // "SHIPPING" or "BILLING"
+}
+
+message SetDefaultAddressResponse {
   bool success = 1;
 }
