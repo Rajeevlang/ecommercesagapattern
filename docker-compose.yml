@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecom_postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secretpassword
+    ports:
+      - "54316:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ecom_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ecom_kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  auth:
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
+    container_name: ecom_auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/auth_db?sslmode=disable
+      JWT_SECRET: supersecretjwtsigningkeyforproduction123!
+      TOKEN_EXPIRATION: 24h
+      GRPC_PORT: 50051
+    ports:
+      - "50051:50051"
+
+  account:
+    build:
+      context: .
+      dockerfile: account/Dockerfile
+    container_name: ecom_account
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/account_db?sslmode=disable
+      GRPC_PORT: 50052
+    ports:
+      - "50052:50052"
+
+  catalog:
+    build:
+      context: .
+      dockerfile: catalog/Dockerfile
+    container_name: ecom_catalog
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/catalog_db?sslmode=disable
+      GRPC_PORT: 50054
+    ports:
+      - "50054:50054"
+
+  payment:
+    build:
+      context: .
+      dockerfile: payment/Dockerfile
+    container_name: ecom_payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/payment_db?sslmode=disable
+      GRPC_PORT: 50055
+    ports:
+      - "50055:50055"
+
+  order:
+    build:
+      context: .
+      dockerfile: order/Dockerfile
+    container_name: ecom_order
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/order_db?sslmode=disable
+      GRPC_PORT: 50053
+      KAFKA_BROKERS: kafka:9092
+      CATALOG_SERVICE_URL: catalog:50054
+      PAYMENT_SERVICE_URL: payment:50055
+      ACCOUNT_SERVICE_URL: account:50052
+    ports:
+      - "50053:50053"
+
+  notification:
+    build:
+      context: .
+      dockerfile: notification/Dockerfile
+    container_name: ecom_notification
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgres://root:secretpassword@postgres:5432/notification_db?sslmode=disable
+      GRPC_PORT: 50056
+      KAFKA_BROKERS: kafka:9092
+      TEMPLATES_DIR: /templates
+    ports:
+      - "50056:50056"
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: apigateway/Dockerfile
+    container_name: ecom_apigateway
+    depends_on:
+      - auth
+      - account
+      - catalog
+      - order
+    environment:
+      PORT: 8080
+      AUTH_SVC_ADDR: auth:50051
+      ACCOUNT_SVC_ADDR: account:50052
+      ORDER_SVC_ADDR: order:50053
+      CATALOG_SVC_ADDR: catalog:50054
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

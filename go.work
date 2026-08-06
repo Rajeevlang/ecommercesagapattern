@@ -5,4 +5,8 @@ use (
 	./auth
 	./shared
 	./account
+	./order
+	./catalog
+	./notification
+	./payment
 )

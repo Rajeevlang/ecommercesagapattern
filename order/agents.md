@@ -1,0 +1,92 @@
+this service is part of ecommerce microservice project 
+make the databasse schema for this and what can i else in the project 
+i have intialized the project  for just
+
+
+
+syntax = "proto3";
+
+
+
+package ecommerce.order.v1;
+
+option go_package = "github.com/rajeev/ecommercesagapattern/shared/pb/orderv1;orderv1";
+
+import "google/protobuf/timestamp.proto";
+
+// OrderService manages the order lifecycles and hosts the Saga Orchestration engine.
+service OrderService {
+  // CreateOrder initiates a new purchase.
+  // [Saga Role]: Saga Trigger.
+  // This creates a record in the database with state "ORDER_STATUS_PENDING" 
+  // and starts the asynchronous/synchronous Saga orchestration flow.
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // GetOrder queries an order.
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+
+  // UpdateOrderStatus updates the status of an order during the Saga transaction lifecycle.
+  // [Saga Role]: Local Action.
+  // Called locally or by the orchestrator at the end of the transaction:
+  // - Sets status to COMPLETED if all steps succeed.
+  // - Sets status to FAILED if any step fails (after executing compensation stubs).
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+}
+
+// OrderStatus defines the states an order traverses during the Saga lifetime.
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  
+  // ORDER_STATUS_PENDING: Order record created, stock reservation and payment in progress.
+  ORDER_STATUS_PENDING = 1;
+  
+  // ORDER_STATUS_COMPLETED: All steps in the Saga (stock reservation and payment) succeeded.
+  ORDER_STATUS_COMPLETED = 2;
+  
+  // ORDER_STATUS_FAILED: One of the steps failed, and compensation was successfully executed.
+  ORDER_STATUS_FAILED = 3;
+  
+  // ORDER_STATUS_CANCELLED: Manual cancellation of the completed order (after Saga completion).
+  ORDER_STATUS_CANCELLED = 4;
+}
+
+message OrderItem {
+  string product_id = 1;
+  int32 quantity = 2;
+  int64 price_cents = 3;       // Price snapshot of the item at purchase time
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  repeated OrderItem items = 2;
+  string payment_method_token = 3; // Stripe/Payment token passed from GraphQL
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  OrderStatus status = 2;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message GetOrderResponse {
+  string order_id = 1;
+  string user_id = 2;
+  repeated OrderItem items = 3;
+  int64 total_amount_cents = 4;
+  OrderStatus status = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message UpdateOrderStatusRequest {
+  string order_id = 1;
+  OrderStatus status = 2;
+  string notes = 3;            // Description of what happened (e.g. "Payment Declined")
+}
+
+message UpdateOrderStatusResponse {
+  bool success = 1;
+}

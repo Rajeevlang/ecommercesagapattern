@@ -85,3 +85,5 @@ We are entering **Phase 2: Authentication & Middleware**.
 2. Wire gRPC connection pooling in the API Gateway.
 3. Replace standard HTTP server in `server.go` with **Chi Router**.
 4. Implement JWT validation middleware in the Gateway.
+
+

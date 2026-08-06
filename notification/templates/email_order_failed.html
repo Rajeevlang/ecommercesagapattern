@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Failed Notice</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e1e4e8;
+        }
+        .header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .order-info {
+            background-color: #fef2f2;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 4px solid #ef4444;
+        }
+        .order-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .btn-retry {
+            display: inline-block;
+            background-color: #ef4444;
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Problem Processing Your Order</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>We encountered an issue while processing your order. Unfortunately, the transaction could not be completed at this time.</p>
+            
+            <div class="order-info">
+                <p><strong>Order ID:</strong> {{.OrderID}}</p>
+                <p><strong>Status:</strong> FAILED</p>
+                <p><strong>Reason:</strong> {{.Reason}}</p>
+            </div>
+
+            <p>Don't worry, no charges were made (or any reserved stock has been safely released). You can review your cart or try using a different payment method to place your order again.</p>
+
+            <a href="#" class="btn-retry">Retry Checkout</a>
+        </div>
+        <div class="footer">
+            &copy; 2026 E-Commerce Saga Shop. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
